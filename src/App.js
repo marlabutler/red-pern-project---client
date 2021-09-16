@@ -1,25 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import React, {useState,  useEffect } from 'react'
+import Auth from './Auth/Auth';
+import Sitebar from './Home/Navbar';
+import ReviewIndex from './Reviews/ReviewIndex';
+import Navigation from './Home/Navigation'
+import {
+  BrowserRouter as Router //We are importing the specific part of the package BrowserRouter but calling it Router. 
+} from 'react-router-dom';
+
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const [sessionToken, setSessionToken] = useState('');
+
+  useEffect(() => {
+  if (localStorage.getItem('token')){
+    setSessionToken(localStorage.getItem('token'));
+  }
+}, [])
+
+const updateToken = (newToken) => {
+  localStorage.setItem('token', newToken);
+  setSessionToken(newToken);
+  console.log(sessionToken)
 }
 
-export default App;
+const clearToken = () => {
+  localStorage.clear();
+  setSessionToken('');
+  window.location.href="/" //Redirects to localhost:3001 on click of logout
+}
+
+const protectedViews = () => {
+  return (sessionToken === localStorage.getItem('token') ? <ReviewIndex token={sessionToken}/>: <Auth updateToken={updateToken}/>)
+}
+
+  return (
+    <div className="App">
+      <Router>
+      {sessionToken !== '' && <Sitebar sessionToken={sessionToken} clickLogout={clearToken}/>} 
+      {protectedViews()}
+      <Navigation sessionToken={sessionToken} />
+      </Router>
+    </div>
+  );
+};
+
+
+export default App; 
